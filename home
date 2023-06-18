@@ -1,0 +1,348 @@
+7161: function(e, t) {
+        "use strict";
+        Object.defineProperty(t, "__esModule", {
+            value: !0
+        }),
+        t.Connector = void 0,
+        t.Connector = class {
+            constructor({options: e}) {
+                this.options = e
+            }
+        }
+    },
+    3219: function(e, t, a) {
+        "use strict";
+        Object.defineProperty(t, "__esModule", {
+            value: !0
+        }),
+        t.getInstalledInjectedConnectors = t.InjectedConnector = t.Connector = void 0;
+        var r = a(7161);
+        Object.defineProperty(t, "Connector", {
+            enumerable: !0,
+            get: function() {
+                return r.Connector
+            }
+        });
+        var n = a(8925);
+        Object.defineProperty(t, "InjectedConnector", {
+            enumerable: !0,
+            get: function() {
+                return n.InjectedConnector
+            }
+        }),
+        Object.defineProperty(t, "getInstalledInjectedConnectors", {
+            enumerable: !0,
+            get: function() {
+                return n.getInstalledInjectedConnectors
+            }
+        })
+    },
+    8925: function(e, t, a) {
+        "use strict";
+        Object.defineProperty(t, "__esModule", {
+            value: !0
+        }),
+        t.isWalletObj = t.getInstalledInjectedConnectors = t.InjectedConnector = void 0;
+        let r = a(7161)
+          , n = a(2990);
+        class i extends r.Connector {
+            constructor({options: e}) {
+                super({
+                    options: e
+                })
+            }
+            available() {
+                return this.ensureWallet(),
+                void 0 !== this._wallet
+            }
+            async ready() {
+                return this.ensureWallet(),
+                !!this._wallet && await this._wallet.isPreauthorized()
+            }
+            async connect() {
+                if (this.ensureWallet(),
+                !this._wallet)
+                    throw new n.ConnectorNotFoundError;
+                try {
+                    await this._wallet.enable()
+                } catch {
+                    throw new n.UserRejectedRequestError
+                }
+                if (!this._wallet.isConnected)
+                    throw new n.UserRejectedRequestError;
+                return this._wallet.account
+            }
+            async disconnect() {
+                if (this.ensureWallet(),
+                !this.available())
+                    throw new n.ConnectorNotFoundError;
+                if (!this._wallet?.isConnected)
+                    throw new n.UserNotConnectedError
+            }
+            async account() {
+                if (this.ensureWallet(),
+                !this._wallet)
+                    throw new n.ConnectorNotConnectedError;
+                return this._wallet.account ? this._wallet.account : null
+            }
+            id() {
+                return this.options.id
+            }
+            name() {
+                if (this.ensureWallet(),
+                !this._wallet)
+                    throw new n.ConnectorNotConnectedError;
+                return this._wallet.name
+            }
+            ensureWallet() {
+                let e = c()
+                  , t = e[this.options.id];
+                t && (this._wallet = t)
+            }
+        }
+        function c() {
+            return "undefined" == typeof window ? {} : Object.getOwnPropertyNames(window).reduce((e,a)=>{
+                if (a.startsWith("starknet")) {
+                    let r = window[a];
+                    (0,
+                    t.isWalletObj)(a, r) && !e[r.id] && (e[r.id] = r)
+                }
+                return e
+            }
+            , {})
+        }
+        t.InjectedConnector = i,
+        t.getInstalledInjectedConnectors = function() {
+            let e = Object.keys(c())
+              , t = d(e);
+            return t.map(e=>new i({
+                options: {
+                    id: e
+                }
+            }))
+        }
+        ;
+        let f = (e,t)=>{
+            try {
+                if (t && ["request", "isConnected", "provider", "enable", "isPreauthorized", "on", "off", "version"].every(e=>e in t))
+                    return "starknet" !== e || t.id && t.name && t.icon || (t.name = "Argent X",
+                    t.icon = ""),
+                    ["id", "name", "icon"].every(e=>e in t)
+            } catch (e) {}
+            return !1
+        }
+        ;
+        t.isWalletObj = f;
+        let d = e=>{
+            for (let t = e.length - 1; t > 0; t--) {
+                let a = Math.floor(Math.random() * (t + 1));
+                [e[t],e[a]] = [e[a], e[t]]
+            }
+            return e
+        }
+    },
+    2990: function(e, t) {
+        "use strict";
+        Object.defineProperty(t, "__esModule", {
+            value: !0
+        }),
+        t.UserNotConnectedError = t.UserRejectedRequestError = t.ConnectorNotFoundError = t.ConnectorNotConnectedError = t.ConnectorAlreadyConnectedError = void 0,
+        t.ConnectorAlreadyConnectedError = class extends Error {
+            constructor() {
+                super(...arguments),
+                this.name = "ConnectorAlreadyConnectedError",
+                this.message = "Connector already connected"
+            }
+        }
+        ,
+        t.ConnectorNotConnectedError = class extends Error {
+            constructor() {
+                super(...arguments),
+                this.name = "ConnectorNotConnectedError",
+                this.message = "Connector not connected"
+            }
+        }
+        ,
+        t.ConnectorNotFoundError = class extends Error {
+            constructor() {
+                super(...arguments),
+                this.name = "ConnectorNotFoundError",
+                this.message = "Connector not found"
+            }
+        }
+        ,
+        t.UserRejectedRequestError = class extends Error {
+            constructor() {
+                super(...arguments),
+                this.name = "UserRejectedRequestError",
+                this.message = "User rejected request"
+            }
+        }
+        ,
+        t.UserNotConnectedError = class extends Error {
+            constructor() {
+                super(...arguments),
+                this.name = "UserNotConnectedError",
+                this.message = "User not connected"
+            }
+        }
+    },
+    906: function(e, t, a) {
+        "use strict";
+        Object.defineProperty(t, "__esModule", {
+            value: !0
+        }),
+        t.useAccount = void 0;
+        let r = a(7294)
+          , n = a(8126)
+          , i = a(9745);
+        t.useAccount = function() {
+            let {account: e} = (0,
+            i.useStarknet)()
+              , {connectors: t} = (0,
+            n.useConnectors)()
+              , [a,c] = (0,
+            r.useState)({
+                status: "disconnected"
+            })
+              , f = (0,
+            r.useCallback)(async()=>{
+                if (!e)
+                    return c({
+                        status: "disconnected"
+                    });
+                for (let a of t) {
+                    if (!a.available())
+                        continue;
+                    let t = await a.account();
+                    if (t && t?.address === e)
+                        return c({
+                            connector: a,
+                            account: t,
+                            address: e,
+                            status: "connected"
+                        })
+                }
+            }
+            , [c, e, t]);
+            return (0,
+            r.useEffect)(()=>{
+                f()
+            }
+            , [f]),
+            a
+        }
+    },
+    156: function(e, t, a) {
+        "use strict";
+        Object.defineProperty(t, "__esModule", {
+            value: !0
+        }),
+        t.useBlock = t.useStarknetBlock = void 0;
+        let r = a(1611)
+          , n = a(9745);
+        function i({refetchInterval: e, onSuccess: t, blockIdentifier: a="latest"}={}) {
+            let {library: i} = (0,
+            n.useStarknet)()
+              , {data: c, isLoading: f, isError: d, error: s} = (0,
+            r.useQuery)(["block", a], function({library: e, args: t}) {
+                return async()=>await e.getBlock(t.blockIdentifier)
+            }({
+                library: i,
+                args: {
+                    blockIdentifier: a
+                }
+            }), {
+                refetchInterval: e,
+                useErrorBoundary: !0,
+                onSuccess: e=>{
+                    e && t && t(e)
+                }
+            });
+            return {
+                data: c,
+                isLoading: f,
+                isError: d,
+                error: s
+            }
+        }
+        t.useStarknetBlock = function() {
+            let {data: e, isLoading: t, isError: a} = i({
+                blockIdentifier: "latest"
+            });
+            return {
+                data: e,
+                loading: t,
+                error: a ? "error loading block number" : void 0
+            }
+        }
+        ,
+        t.useBlock = i
+    },
+    6144: function(e, t, a) {
+        "use strict";
+        Object.defineProperty(t, "__esModule", {
+            value: !0
+        }),
+        t.useStarknetCall = void 0;
+        let r = a(1611)
+          , n = a(7294)
+          , i = a(9745)
+          , c = a(6889);
+        t.useStarknetCall = function({contract: e, method: t, args: a, options: f}) {
+            let {library: d} = (0,
+            i.useStarknet)()
+              , s = f?.blockIdentifier || "pending"
+              , o = (0,
+            n.useMemo)(()=>(function({library: e, args: t}) {
+                let {contract: a, method: r, args: n, blockIdentifier: i} = t;
+                return [{
+                    entity: "readContract",
+                    chainId: e.chainId,
+                    contract: a?.address,
+                    method: r,
+                    args: n,
+                    blockIdentifier: i
+                }]
+            }
+            )({
+                library: d,
+                args: {
+                    contract: e,
+                    method: t,
+                    args: a,
+                    blockIdentifier: s
+                }
+            }), [d, e, t, a, s])
+              , {data: u, isLoading: b, isError: h, refetch: l, isRefetching: p} = (0,
+            r.useQuery)(o, function({args: e}) {
+                return async()=>{
+                    if (!e.args || !e.contract || !e.method)
+                        return null;
+                    let t = e.contract && e.method && e.contract[e.method];
+                    return t ? await t(...e.args, {
+                        blockIdentifier: e.blockIdentifier
+                    }) : null
+                }
+            }({
+                args: {
+                    contract: e,
+                    method: t,
+                    args: a,
+                    blockIdentifier: s
+                }
+            }));
+            return (0,
+            c.useInvalidateOnBlock)({
+                enabled: f?.watch,
+                queryKey: o
+            }),
+            {
+                data: u,
+                loading: b,
+                refreshing: p,
+                refresh: l,
+                error: h ? "error performing call" : void 0
+            }
+        }
+    },
